@@ -16,26 +16,43 @@ export default {
   name: "UploadArea",
   emits: ["images-uploaded"],
   methods: {
-    handleImageUpload(event) {
+    async handleImageUpload(event) {
       event.preventDefault();
       const files = event.dataTransfer.files;
       const images = Array.from(files);
 
-      let imagesData = [];
+      const processedImages = await Promise.all(
+        images.map(async (imageFile) => {
+          const dataURL = await this.convertFileToDataURL(imageFile);
+          const blob = await this.convertFileToBlob(imageFile);
 
-      images.forEach((imageFile, index) => {
-        let reader = new FileReader();
+          return {
+            dataURL,
+            blob,
+          };
+        })
+      );
 
+      this.$emit("images-uploaded", processedImages);
+    },
+
+    convertFileToDataURL(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (event) => resolve(event.target.result);
+        reader.onerror = (error) => reject(error);
+        reader.readAsDataURL(file);
+      });
+    },
+    convertFileToBlob(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
         reader.onload = (event) => {
-          imagesData.push({ file: imageFile, dataURL: event.target.result });
-
-          // Emit images-uploaded event when all files are processed
-          if (index === images.length - 1) {
-            this.$emit("images-uploaded", imagesData);
-          }
+          const blob = new Blob([event.target.result], { type: file.type });
+          resolve(blob);
         };
-
-        reader.readAsDataURL(imageFile);
+        reader.onerror = (error) => reject(error);
+        reader.readAsArrayBuffer(file);
       });
     },
   },

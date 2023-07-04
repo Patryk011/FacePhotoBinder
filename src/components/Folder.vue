@@ -1,14 +1,10 @@
 <template>
   <div class="folder">
     <h2>{{ title }}</h2>
+    <p>{{ images.length }} plików</p>
     <button class="download-button" @click="downloadFolder">
       Pobierz folder
     </button>
-    <ul class="image-list">
-      <li v-for="(image, index) in images" :key="index">
-        <a :href="image.url" download> Obraz {{ index + 1 }}</a>
-      </li>
-    </ul>
   </div>
 </template>
 

@@ -13,9 +13,12 @@
         :images="folder.images"
         @download-folder="downloadFolder($event, folder.title)"
       />
+      <button @click="resetView" class="reset-button">Domyślny widok</button>
     </div>
   </div>
 </template>
+
+<!-- <button v-if="sortedFolders.length" class="reset-button" @click="resetView">Resetuj widok</button> -->
 
 <script>
 import UploadArea from "./components/UploadArea.vue";
@@ -36,13 +39,16 @@ export default {
     };
   },
   methods: {
-    handleImagesUploaded(images) {
+    resetView() {
+      this.sortedFolders = [];
+    },
+    async handleImagesUploaded(images) {
       this.isProcessing = true;
 
       const imagesWithFaces = [];
       const imagesWithoutFaces = [];
 
-      Promise.all(
+      await Promise.all(
         images.map(async (imageData) => {
           const hasFace = await this.detectFace(imageData.dataURL);
           if (hasFace) {
@@ -51,18 +57,14 @@ export default {
             imagesWithoutFaces.push(imageData);
           }
         })
-      )
-        .then(() => {
-          this.sortedFolders = [
-            { title: "Folder z ludźmi", images: imagesWithFaces },
-            { title: "Folder bez ludzi", images: imagesWithoutFaces },
-          ];
-          this.isProcessing = false;
-        })
-        .catch((error) => {
-          console.error("Błąd podczas przetwarzania zdjęć:", error);
-          this.isProcessing = false;
-        });
+      );
+
+      this.sortedFolders = [
+        { title: "Folder z ludźmi", images: imagesWithFaces },
+        { title: "Folder bez ludzi ", images: imagesWithoutFaces },
+      ];
+
+      this.isProcessing = false;
     },
 
     async detectFace(dataURL) {
@@ -78,11 +80,8 @@ export default {
 
       for (let index = 0; index < images.length; index++) {
         const image = images[index];
-        const response = await fetch(image.dataURL);
-        const blob = await response.blob();
-
         const fileName = `Obraz_${index + 1}.jpg`;
-        zip.file(fileName, blob, { binary: true });
+        zip.file(fileName, image.blob, { binary: true });
       }
 
       zip.generateAsync({ type: "blob" }).then((content) => {
@@ -122,5 +121,22 @@ h1 {
 p {
   font-size: 18px;
   color: #333;
+}
+
+.reset-button {
+  display: block;
+  margin: 40px auto;
+  padding: 10px 20px;
+  font-size: 16px;
+  color: #fff;
+  background-color: #007bff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  height: 50%;
+}
+
+.reset-button:hover {
+  background-color: #0056b3;
 }
 </style>
