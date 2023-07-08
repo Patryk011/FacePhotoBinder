@@ -1,7 +1,7 @@
 const { defineConfig } = require("@vue/cli-service");
 module.exports = defineConfig({
   devServer: {
-    allowedHosts: [".onrender.com"],
+    allowedHosts: "all",
   },
   transpileDependencies: true,
 });
