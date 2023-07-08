@@ -3,7 +3,7 @@ module.exports = defineConfig({
   devServer: {
     allowedHosts: "all",
     headers: {
-      "Access-Control-Allow-Origin": "https://photo-binder.onrender.com",
+      "Access-Control-Allow-Origin": "*",
     },
   },
   transpileDependencies: true,
